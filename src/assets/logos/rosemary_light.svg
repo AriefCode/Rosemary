@@ -1,0 +1,37 @@
+<svg width="800" height="340" viewBox="0 0 800 340" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="340" fill="#FFFFFF"/>
+
+  <!-- STEM: tipis, panjang -->
+  <line x1="155" y1="50" x2="155" y2="310" stroke="#2D6A4F" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- PUCUK: oval kecil hampir bulat, warna muda, langsung di ujung stem -->
+  <ellipse cx="155" cy="44" rx="13" ry="17" fill="#95D5B2"/>
+
+  <!-- PASANG 1 - paling atas, kecil, hijau muda -->
+  <ellipse cx="126" cy="90" rx="22" ry="11" fill="#95D5B2" transform="rotate(-42 126 90)"/>
+  <ellipse cx="184" cy="90" rx="22" ry="11" fill="#95D5B2" transform="rotate(42 184 90)"/>
+
+  <!-- PASANG 2 - sedikit lebih besar, hijau sedang muda -->
+  <ellipse cx="120" cy="133" rx="26" ry="13" fill="#74C69D" transform="rotate(-40 120 133)"/>
+  <ellipse cx="190" cy="133" rx="26" ry="13" fill="#74C69D" transform="rotate(40 190 133)"/>
+
+  <!-- PASANG 3 - lebih besar, hijau sedang -->
+  <ellipse cx="116" cy="180" rx="30" ry="14" fill="#52B788" transform="rotate(-38 116 180)"/>
+  <ellipse cx="194" cy="180" rx="30" ry="14" fill="#52B788" transform="rotate(38 194 180)"/>
+
+  <!-- PASANG 4 - paling besar, hijau gelap, posisi bawah -->
+  <ellipse cx="112" cy="230" rx="34" ry="16" fill="#40916C" transform="rotate(-36 112 230)"/>
+  <ellipse cx="198" cy="230" rx="34" ry="16" fill="#40916C" transform="rotate(36 198 230)"/>
+
+  <!-- WORDMARK -->
+  <text x="248" y="175" font-family="Georgia, 'Times New Roman', serif" font-size="78" font-weight="700" fill="#1B4332" letter-spacing="1">Rosemary</text>
+
+  <!-- SUB LABEL -->
+  <text x="252" y="210" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#52B788" letter-spacing="6">INVENTORY SYSTEM</text>
+
+  <!-- DIVIDER -->
+  <line x1="252" y1="225" x2="760" y2="225" stroke="#B7E4C7" stroke-width="0.8"/>
+
+  <!-- TAGLINE -->
+  <text x="252" y="258" font-family="Georgia, 'Times New Roman', serif" font-size="24" fill="#40916C" font-style="italic">Fresh Data. Smart Control.</text>
+</svg>
