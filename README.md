@@ -40,4 +40,5 @@ npm run build
 
 ---
 
-> Dibuat sebagai proyek mata kuliah — Politeknik Citra Raka
+> Dibuat sebagai proyek mata kuliah — Politeknik Caltex Riau
+
