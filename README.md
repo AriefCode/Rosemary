@@ -1,16 +1,43 @@
-# React + Vite
+# 🌿 Rosemary
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Fresh Data. Smart Control.
 
-Currently, two official plugins are available:
+Sistem manajemen inventaris sayur berbasis web untuk membantu restoran mencatat persediaan, menginput orderan, dan menghasilkan daftar belanjaan secara otomatis.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## ✨ Fitur
 
-## React Compiler
+- 📦 Pencatatan & pemantauan persediaan sayur
+- 🧾 Input dan manajemen orderan restoran
+- 🛒 Generate daftar belanjaan otomatis berdasarkan kebutuhan
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
 
-## Expanding the ESLint configuration
+| Layer      | Tools                             |
+| ---------- | --------------------------------- |
+| Frontend   | React 19 + Vite                   |
+| Styling    | Tailwind CSS v4                   |
+| Routing    | React Router DOM                  |
+| State/Data | React hooks (useState, useEffect) |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🚀 Getting Started
+
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+## 👥 Tim Pengembang
+
+- M. Arief
+- Marwanto Asnan
+- Aditya de Foeng
+
+---
+
+> Dibuat sebagai proyek mata kuliah — Politeknik Citra Raka
