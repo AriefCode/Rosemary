@@ -1,5 +1,8 @@
 // src/pages/DashboardPage.jsx
 
+import { useEffect, useState } from "react";
+import axios from "axios";
+
 const inventory = [
   {
     id: 1,
@@ -87,8 +90,19 @@ const statCards = [
 ];
 
 export default function DashboardPage() {
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://127.0.0.1:8000/api/users")
+      .then((res) => setUsers(res.data))
+      .catch((err) => console.error(err));
+  }, []);
+
   return (
     <>
+      <pre style={{ color: "red" }}>{JSON.stringify(users, null, 2)}</pre>
+
       {/* Page Header */}
       <header className="mb-8">
         <h2 className="font-headline-1 text-headline-1 text-primary">
