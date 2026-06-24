@@ -171,3 +171,20 @@
     "GRAD" 0,
     "opsz" 24;
 }
+
+@keyframes shiny-text {
+  from { background-position: 200% center; }
+  to { background-position: -200% center; }
+}
+
+@keyframes aurora {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

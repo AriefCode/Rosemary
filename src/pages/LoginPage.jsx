@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "motion/react";
 import rosemaryLogo from "../assets/logos/rosemary_light.svg";
 import { useAuth } from "../context/AuthContext";
+import ShinyText from "../components/reactbits/ShinyText";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -32,10 +34,17 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="w-full max-w-auth-card bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(27,67,50,0.10)] overflow-hidden">
+    <motion.main
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="w-full max-w-[400px] bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(27,67,50,0.10)] overflow-hidden"
+    >
       <div className="pb-6 px-10 pt-12 text-center flex flex-col items-center">
         <img src={rosemaryLogo} alt="Rosemary Logo" className="h-16 w-auto object-contain mb-4" />
-        <h1 className="font-headline-1 text-headline-1 text-primary">Rosemary</h1>
+        <h1 className="font-headline-1 text-headline-1">
+          <ShinyText>Rosemary</ShinyText>
+        </h1>
         <p className="font-label text-label tracking-[0.2em] font-semibold text-secondary uppercase mt-1">
           Inventory System
         </p>
@@ -59,7 +68,9 @@ export default function LoginPage() {
           <div className="space-y-2">
             <label className="font-label text-label text-on-surface-variant block">Email</label>
             <div className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">mail</span>
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
+                mail
+              </span>
               <input
                 type="email"
                 value={email}
@@ -72,12 +83,11 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <label className="font-label text-label text-on-surface-variant">Kata Sandi</label>
-              <a href="#" className="font-label text-label text-secondary hover:underline">Lupa sandi?</a>
-            </div>
+            <label className="font-label text-label text-on-surface-variant block">Kata Sandi</label>
             <div className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">lock</span>
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
+                lock
+              </span>
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
@@ -89,7 +99,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-secondary transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-secondary transition-colors focus-visible:outline-none"
               >
                 <span className="material-symbols-outlined text-[20px]">
                   {showPassword ? "visibility_off" : "visibility"}
@@ -101,7 +111,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-primary text-on-primary py-3.5 rounded-lg font-label text-body font-bold hover:bg-secondary active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+            className="w-full bg-primary text-on-primary py-3.5 rounded-lg font-label text-body font-bold hover:bg-secondary active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-fern"
           >
             {submitting ? "Memproses..." : "Masuk Sekarang"}
             <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
@@ -110,6 +120,6 @@ export default function LoginPage() {
       </div>
 
       <div className="h-2 bg-linear-to-r from-primary-container via-secondary to-accent-fern" />
-    </main>
+    </motion.main>
   );
 }

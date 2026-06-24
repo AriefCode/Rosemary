@@ -32,7 +32,6 @@ export default function App() {
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="persediaan" element={<PersediaanPage />} />
-              <Route path="pesanan" element={<PesananPage />} />
               <Route path="laporan" element={<LaporanPage />} />
             </Route>
           </Route>
