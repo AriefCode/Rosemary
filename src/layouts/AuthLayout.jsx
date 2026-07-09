@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import rosemaryLogo from "../assets/logos/rosemary_light.svg";
+import rosemaryLogo from "../assets/logos/rosemary_dark.svg";
 
 export default function AuthLayout() {
   return (
@@ -18,7 +18,7 @@ export default function AuthLayout() {
           animation: "aurora 10s ease infinite",
         }}
       >
-        <img src={rosemaryLogo} alt="" className="w-[72%] h-auto opacity-[0.07]" />
+        <img src={rosemaryLogo} alt="" className="w-[72%] h-auto opacity-40" />
       </div>
     </div>
   );

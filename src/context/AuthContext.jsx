@@ -10,24 +10,21 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const savedRole = localStorage.getItem("role");
 
     if (!token) {
       setLoading(false);
       return;
     }
 
-    setRole(savedRole);
+    // Role tidak disimpan di localStorage — selalu diambil dari server
     authService
       .getMe()
       .then((data) => {
         setUser(data);
         setRole(data.role);
-        localStorage.setItem("role", data.role);
       })
       .catch(() => {
         localStorage.removeItem("token");
-        localStorage.removeItem("role");
         setUser(null);
         setRole(null);
       })
@@ -37,7 +34,6 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const data = await authService.login(email, password);
     localStorage.setItem("token", data.token);
-    localStorage.setItem("role", data.role);
     setUser(data.user);
     setRole(data.role);
     return data;
@@ -50,7 +46,6 @@ export function AuthProvider({ children }) {
       // ignore
     }
     localStorage.removeItem("token");
-    localStorage.removeItem("role");
     setUser(null);
     setRole(null);
   };

@@ -5,6 +5,8 @@ import { useAuth } from "../context/AuthContext";
 const pemilikNavItems = [
   { segment: "dashboard", icon: "dashboard", label: "Dashboard" },
   { segment: "persediaan", icon: "inventory_2", label: "Persediaan" },
+  { segment: "restoran", icon: "store", label: "Restoran" },
+  { segment: "pengguna", icon: "group", label: "Manajemen User" },
   { segment: "laporan", icon: "analytics", label: "Laporan" },
 ];
 

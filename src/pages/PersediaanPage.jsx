@@ -70,19 +70,29 @@ export default function PersediaanPage() {
     setShowForm(true);
   };
 
+  // Daftar belanja bergantung logika server, jadi tetap di-refetch setelah mutasi;
+  // daftar sayur cukup di-update lokal dari respons API (tanpa flash skeleton).
+  const refreshBelanja = () => {
+    getDaftarBelanja().then(setBelanjaList).catch(() => {});
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
     try {
       if (editingId) {
-        await updateSayur(editingId, form);
+        const updated = await updateSayur(editingId, form);
+        setSayurList((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
         toast("Data sayur berhasil diperbarui.");
       } else {
-        await createSayur(form);
+        const created = await createSayur(form);
+        setSayurList((prev) =>
+          [...prev, created].sort((a, b) => a.nama.localeCompare(b.nama))
+        );
         toast("Sayur berhasil ditambahkan.");
       }
       setShowForm(false);
-      loadData();
+      refreshBelanja();
     } catch (err) {
       setFormError(err.response?.data?.message || "Gagal menyimpan data.");
     }
@@ -91,8 +101,9 @@ export default function PersediaanPage() {
   const handleDelete = async () => {
     try {
       await deleteSayur(confirmDelete);
+      setSayurList((prev) => prev.filter((s) => s.id !== confirmDelete));
       toast("Sayur berhasil dihapus.");
-      loadData();
+      refreshBelanja();
     } catch (err) {
       toast(err.response?.data?.message || "Gagal menghapus sayur.", "error");
     }
@@ -154,38 +165,65 @@ export default function PersediaanPage() {
                 <p className="text-error text-sm mb-3 p-3 bg-status-danger-bg rounded-lg">{formError}</p>
               )}
               <div className="space-y-4">
-                <input
-                  required
-                  value={form.nama}
-                  onChange={(e) => setForm({ ...form, nama: e.target.value })}
-                  placeholder="Nama sayur"
-                  className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body focus:outline-none focus:ring-2 focus:ring-accent-fern/40 focus:border-accent-fern transition-colors"
-                />
-                <input
-                  required
-                  value={form.satuan}
-                  onChange={(e) => setForm({ ...form, satuan: e.target.value })}
-                  placeholder="Satuan (Kg, Ikat, ...)"
-                  className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body focus:outline-none focus:ring-2 focus:ring-accent-fern/40 focus:border-accent-fern transition-colors"
-                />
-                <input
-                  required
-                  type="number"
-                  min="0"
-                  value={form.jumlah_persediaan}
-                  onChange={(e) => setForm({ ...form, jumlah_persediaan: Number(e.target.value) })}
-                  placeholder="Jumlah persediaan"
-                  className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body focus:outline-none focus:ring-2 focus:ring-accent-fern/40 focus:border-accent-fern transition-colors"
-                />
-                <input
-                  required
-                  type="number"
-                  min="0"
-                  value={form.batas_minimum}
-                  onChange={(e) => setForm({ ...form, batas_minimum: Number(e.target.value) })}
-                  placeholder="Batas minimum"
-                  className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body focus:outline-none focus:ring-2 focus:ring-accent-fern/40 focus:border-accent-fern transition-colors"
-                />
+                <div>
+                  <label htmlFor="sayur-nama" className="font-label text-sm text-on-surface-variant block mb-1">
+                    Nama Sayur
+                  </label>
+                  <input
+                    id="sayur-nama"
+                    required
+                    value={form.nama}
+                    onChange={(e) => setForm({ ...form, nama: e.target.value })}
+                    placeholder="cth. Bayam"
+                    className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body focus:outline-none focus:ring-2 focus:ring-accent-fern/40 focus:border-accent-fern transition-colors"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="sayur-satuan" className="font-label text-sm text-on-surface-variant block mb-1">
+                    Satuan
+                  </label>
+                  <input
+                    id="sayur-satuan"
+                    required
+                    value={form.satuan}
+                    onChange={(e) => setForm({ ...form, satuan: e.target.value })}
+                    placeholder="cth. Kg, Ikat, Pcs"
+                    className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body focus:outline-none focus:ring-2 focus:ring-accent-fern/40 focus:border-accent-fern transition-colors"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="sayur-jumlah" className="font-label text-sm text-on-surface-variant block mb-1">
+                    Jumlah Persediaan
+                  </label>
+                  <input
+                    id="sayur-jumlah"
+                    required
+                    type="number"
+                    min="0"
+                    value={form.jumlah_persediaan}
+                    onChange={(e) => setForm({ ...form, jumlah_persediaan: Number(e.target.value) })}
+                    placeholder="cth. 25"
+                    className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body focus:outline-none focus:ring-2 focus:ring-accent-fern/40 focus:border-accent-fern transition-colors"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="sayur-batas" className="font-label text-sm text-on-surface-variant block mb-1">
+                    Batas Minimum Stok
+                  </label>
+                  <input
+                    id="sayur-batas"
+                    required
+                    type="number"
+                    min="0"
+                    value={form.batas_minimum}
+                    onChange={(e) => setForm({ ...form, batas_minimum: Number(e.target.value) })}
+                    placeholder="cth. 5"
+                    className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body focus:outline-none focus:ring-2 focus:ring-accent-fern/40 focus:border-accent-fern transition-colors"
+                  />
+                  <p className="text-xs text-text-muted mt-1">
+                    Stok di bawah angka ini akan ditandai "menipis".
+                  </p>
+                </div>
               </div>
               <div className="flex gap-3 mt-6">
                 <button

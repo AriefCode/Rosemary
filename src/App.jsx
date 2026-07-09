@@ -12,6 +12,7 @@ const PersediaanPage = lazy(() => import("./pages/PersediaanPage"));
 const PesananPage = lazy(() => import("./pages/PesananPage"));
 const LaporanPage = lazy(() => import("./pages/LaporanPage"));
 const RestoranPage = lazy(() => import("./pages/RestoranPage"));
+const UsersPage = lazy(() => import("./pages/UsersPage"));
 
 export default function App() {
   return (
@@ -32,6 +33,8 @@ export default function App() {
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="persediaan" element={<PersediaanPage />} />
+              <Route path="restoran" element={<RestoranPage />} />
+              <Route path="pengguna" element={<UsersPage />} />
               <Route path="laporan" element={<LaporanPage />} />
             </Route>
           </Route>

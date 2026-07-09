@@ -37,18 +37,11 @@ export default function PesananPage() {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [confirmSelesai, setConfirmSelesai] = useState(null);
 
-  const loadData = async () => {
+  const loadOrderan = async () => {
     setLoading(true);
     try {
       const params = filterStatus ? { status: filterStatus } : {};
-      const [orderan, restoran, sayur] = await Promise.all([
-        getOrderanList(params),
-        getRestoranList(),
-        getSayurList(),
-      ]);
-      setOrderanList(orderan);
-      setRestoranList(restoran);
-      setSayurList(sayur);
+      setOrderanList(await getOrderanList(params));
     } catch {
       toast("Gagal memuat data pesanan.", "error");
     } finally {
@@ -56,7 +49,13 @@ export default function PesananPage() {
     }
   };
 
-  useEffect(() => { loadData(); }, [filterStatus]);
+  // Data dropdown cukup dimuat sekali; hanya daftar orderan yang bergantung filter
+  useEffect(() => {
+    getRestoranList().then(setRestoranList).catch(() => {});
+    getSayurList().then(setSayurList).catch(() => {});
+  }, []);
+
+  useEffect(() => { loadOrderan(); }, [filterStatus]);
 
   // Body scroll lock
   useEffect(() => {
@@ -115,16 +114,26 @@ export default function PesananPage() {
         jumlah: Number(item.jumlah),
       })),
     };
+    // Semua endpoint mengembalikan orderan lengkap dengan relasi — cukup update state lokal
+    const sortByTanggalDesc = (list) =>
+      [...list].sort((a, b) => String(b.tanggal_orderan).localeCompare(String(a.tanggal_orderan)));
+
     try {
       if (editingOrder) {
-        await updateOrderan(editingOrder.id, payload);
+        const updated = await updateOrderan(editingOrder.id, payload);
+        setOrderanList((prev) =>
+          sortByTanggalDesc(prev.map((o) => (o.id === updated.id ? updated : o)))
+        );
         toast("Orderan berhasil diperbarui.");
       } else {
-        await createOrderan(payload);
+        const created = await createOrderan(payload);
+        // Orderan baru selalu pending — masuk list kecuali filter "selesai"
+        if (filterStatus !== "selesai") {
+          setOrderanList((prev) => sortByTanggalDesc([created, ...prev]));
+        }
         toast("Orderan berhasil dibuat.");
       }
       setShowForm(false);
-      loadData();
     } catch (err) {
       toast(err.response?.data?.message || "Gagal menyimpan orderan.", "error");
     }
@@ -133,8 +142,8 @@ export default function PesananPage() {
   const handleDelete = async () => {
     try {
       await deleteOrderan(confirmDelete);
+      setOrderanList((prev) => prev.filter((o) => o.id !== confirmDelete));
       toast("Orderan berhasil dihapus.");
-      loadData();
     } catch (err) {
       toast(err.response?.data?.message || "Gagal menghapus orderan.", "error");
     }
@@ -143,9 +152,15 @@ export default function PesananPage() {
 
   const handleSelesai = async () => {
     try {
-      await selesaiOrderan(confirmSelesai);
+      const done = await selesaiOrderan(confirmSelesai);
+      setOrderanList((prev) =>
+        filterStatus === "pending"
+          ? prev.filter((o) => o.id !== done.id)
+          : prev.map((o) => (o.id === done.id ? done : o))
+      );
+      // Stok sayur berubah di server — segarkan data dropdown
+      getSayurList().then(setSayurList).catch(() => {});
       toast("Orderan selesai. Stok telah dikurangi otomatis.");
-      loadData();
     } catch (err) {
       toast(err.response?.data?.message || "Gagal menyelesaikan orderan.", "error");
     }
@@ -212,24 +227,36 @@ export default function PesananPage() {
                 {editingOrder ? `Edit Orderan #${editingOrder.id}` : "Buat Orderan Baru"}
               </h3>
               <div className="space-y-4">
-                <select
-                  required
-                  value={form.restoran_id}
-                  onChange={(e) => setForm({ ...form, restoran_id: e.target.value })}
-                  className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body focus:outline-none focus:ring-2 focus:ring-accent-fern/40 focus:border-accent-fern"
-                >
-                  <option value="">Pilih Restoran</option>
-                  {restoranList.map((r) => (
-                    <option key={r.id} value={r.id}>{r.nama}</option>
-                  ))}
-                </select>
-                <input
-                  required
-                  type="date"
-                  value={form.tanggal_orderan}
-                  onChange={(e) => setForm({ ...form, tanggal_orderan: e.target.value })}
-                  className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body focus:outline-none focus:ring-2 focus:ring-accent-fern/40 focus:border-accent-fern"
-                />
+                <div>
+                  <label htmlFor="orderan-restoran" className="font-label text-sm text-on-surface-variant block mb-1">
+                    Restoran
+                  </label>
+                  <select
+                    id="orderan-restoran"
+                    required
+                    value={form.restoran_id}
+                    onChange={(e) => setForm({ ...form, restoran_id: e.target.value })}
+                    className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body focus:outline-none focus:ring-2 focus:ring-accent-fern/40 focus:border-accent-fern"
+                  >
+                    <option value="">Pilih Restoran</option>
+                    {restoranList.map((r) => (
+                      <option key={r.id} value={r.id}>{r.nama}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="orderan-tanggal" className="font-label text-sm text-on-surface-variant block mb-1">
+                    Tanggal Orderan
+                  </label>
+                  <input
+                    id="orderan-tanggal"
+                    required
+                    type="date"
+                    value={form.tanggal_orderan}
+                    onChange={(e) => setForm({ ...form, tanggal_orderan: e.target.value })}
+                    className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body focus:outline-none focus:ring-2 focus:ring-accent-fern/40 focus:border-accent-fern"
+                  />
+                </div>
                 <div className="space-y-3">
                   <p className="font-label text-label text-on-surface-variant">Detail Item</p>
                   {form.items.map((item, index) => {
@@ -239,6 +266,7 @@ export default function PesananPage() {
                         <div className="flex-1 min-w-0">
                           <select
                             required
+                            aria-label={`Sayur item ${index + 1}`}
                             value={item.sayur_id}
                             onChange={(e) => updateItem(index, "sayur_id", e.target.value)}
                             className="w-full px-3 py-2 border border-outline-variant rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-fern/40"
@@ -260,6 +288,8 @@ export default function PesananPage() {
                           required
                           type="number"
                           min="1"
+                          aria-label={`Jumlah item ${index + 1}`}
+                          title="Jumlah"
                           value={item.jumlah}
                           onChange={(e) => updateItem(index, "jumlah", e.target.value)}
                           className="w-20 px-2 py-2 border border-outline-variant rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-fern/40"

@@ -29,8 +29,19 @@ export default function Topbar({ onMenuToggle }) {
 
   useEffect(() => {
     loadNotifications();
-    const interval = setInterval(loadNotifications, 30000);
-    return () => clearInterval(interval);
+    // Interval longgar + skip saat tab tersembunyi — backend dev single-threaded,
+    // polling agresif membuat request halaman ikut mengantre
+    const interval = setInterval(() => {
+      if (!document.hidden) loadNotifications();
+    }, 120000);
+    const onVisible = () => {
+      if (!document.hidden) loadNotifications();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   useEffect(() => {

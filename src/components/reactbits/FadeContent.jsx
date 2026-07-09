@@ -5,7 +5,8 @@ export default function FadeContent({ children, delay = 0, className = "" }) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay, ease: "easeOut" }}
+      // Delay stagger dikecilkan agar konten yang sudah dimuat tidak tertahan animasi
+      transition={{ duration: 0.18, delay: delay * 0.3, ease: "easeOut" }}
       className={className}
     >
       {children}

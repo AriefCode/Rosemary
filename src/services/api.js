@@ -16,4 +16,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Token tidak valid / kedaluwarsa: bersihkan sesi dan arahkan ke login
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && window.location.pathname !== "/login") {
+      localStorage.removeItem("token");
+      window.location.assign("/login");
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
