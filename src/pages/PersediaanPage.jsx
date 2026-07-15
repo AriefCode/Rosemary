@@ -8,7 +8,9 @@ import ConfirmModal from "../components/ConfirmModal";
 import { SkeletonRow } from "../components/Skeleton";
 import FadeContent from "../components/reactbits/FadeContent";
 
-const emptyForm = { nama: "", satuan: "", jumlah_persediaan: 0, batas_minimum: 5 };
+const emptyForm = { nama: "", satuan: "", jumlah_persediaan: 0, batas_minimum: 5, gambar: null };
+const MAX_GAMBAR_SIZE = 2 * 1024 * 1024; // 2MB, samakan dengan batas validasi backend
+const GAMBAR_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export default function PersediaanPage() {
   const toast = useToast();
@@ -20,6 +22,8 @@ export default function PersediaanPage() {
   const [form, setForm] = useState(emptyForm);
   const [formError, setFormError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [gambarPreview, setGambarPreview] = useState(null);
+  const [hapusGambar, setHapusGambar] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -55,6 +59,8 @@ export default function PersediaanPage() {
     setEditingId(null);
     setForm(emptyForm);
     setFormError("");
+    setGambarPreview(null);
+    setHapusGambar(false);
     setShowForm(true);
   };
 
@@ -65,9 +71,46 @@ export default function PersediaanPage() {
       satuan: item.satuan,
       jumlah_persediaan: item.jumlah_persediaan,
       batas_minimum: item.batas_minimum,
+      gambar: null,
     });
     setFormError("");
+    setGambarPreview(item.gambar_url || null);
+    setHapusGambar(false);
     setShowForm(true);
+  };
+
+  // Preview lokal untuk file yang baru dipilih (belum diupload) — object URL
+  // dibersihkan begitu file diganti/form ditutup agar tidak bocor memori.
+  useEffect(() => {
+    if (!(form.gambar instanceof File)) return;
+    const url = URL.createObjectURL(form.gambar);
+    setGambarPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [form.gambar]);
+
+  const handleGambarChange = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    if (!GAMBAR_MIME_TYPES.includes(file.type)) {
+      setFormError("Format gambar harus JPEG, PNG, atau WEBP.");
+      return;
+    }
+    if (file.size > MAX_GAMBAR_SIZE) {
+      setFormError("Ukuran gambar maksimal 2MB.");
+      return;
+    }
+
+    setFormError("");
+    setHapusGambar(false);
+    setForm((f) => ({ ...f, gambar: file }));
+  };
+
+  const handleRemoveGambar = () => {
+    setForm((f) => ({ ...f, gambar: null }));
+    setGambarPreview(null);
+    setHapusGambar(true);
   };
 
   // Daftar belanja bergantung logika server, jadi tetap di-refetch setelah mutasi;
@@ -81,7 +124,7 @@ export default function PersediaanPage() {
     setFormError("");
     try {
       if (editingId) {
-        const updated = await updateSayur(editingId, form);
+        const updated = await updateSayur(editingId, { ...form, hapus_gambar: hapusGambar });
         setSayurList((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
         toast("Data sayur berhasil diperbarui.");
       } else {
@@ -165,6 +208,54 @@ export default function PersediaanPage() {
                 <p className="text-error text-sm mb-3 p-3 bg-status-danger-bg rounded-lg">{formError}</p>
               )}
               <div className="space-y-4">
+                <div>
+                  <label className="font-label text-sm text-on-surface-variant block mb-1">
+                    Gambar Sayur
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 rounded-lg bg-surface-container-low border border-outline-variant overflow-hidden flex items-center justify-center shrink-0">
+                      {gambarPreview ? (
+                        <img
+                          src={gambarPreview}
+                          alt={form.nama ? `Pratinjau ${form.nama}` : "Pratinjau gambar sayur"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span
+                          className="material-symbols-outlined text-3xl text-outline"
+                          style={{ fontVariationSettings: "'FILL' 0, 'wght' 300" }}
+                        >
+                          image
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-1 space-y-1.5">
+                      <label
+                        htmlFor="sayur-gambar"
+                        className="inline-block cursor-pointer text-sm font-body text-accent-fern hover:text-primary border border-outline-variant rounded-lg px-3 py-2 transition-colors"
+                      >
+                        {gambarPreview ? "Ganti Gambar" : "Unggah Gambar"}
+                      </label>
+                      <input
+                        id="sayur-gambar"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handleGambarChange}
+                        className="hidden"
+                      />
+                      {gambarPreview && (
+                        <button
+                          type="button"
+                          onClick={handleRemoveGambar}
+                          className="block text-xs text-error hover:text-[#7f1d1d] transition-colors"
+                        >
+                          Hapus gambar
+                        </button>
+                      )}
+                      <p className="text-xs text-text-muted">JPEG/PNG/WEBP, maks. 2MB.</p>
+                    </div>
+                  </div>
+                </div>
                 <div>
                   <label htmlFor="sayur-nama" className="font-label text-sm text-on-surface-variant block mb-1">
                     Nama Sayur
@@ -260,6 +351,7 @@ export default function PersediaanPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-surface-container-low font-label text-on-surface-variant text-xs uppercase tracking-wider">
+                  <th className="px-6 py-4">Gambar</th>
                   <th className="px-6 py-4">Nama</th>
                   <th className="px-6 py-4">Stok</th>
                   <th className="px-6 py-4">Satuan</th>
@@ -270,10 +362,10 @@ export default function PersediaanPage() {
               </thead>
               <tbody className="font-body text-on-surface">
                 {loading ? (
-                  [1, 2, 3, 4].map((i) => <SkeletonRow key={i} cols={6} />)
+                  [1, 2, 3, 4].map((i) => <SkeletonRow key={i} cols={7} />)
                 ) : sayurList.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-14 text-center">
+                    <td colSpan={7} className="px-6 py-14 text-center">
                       <span className="material-symbols-outlined text-5xl text-outline block mb-3" style={{ fontVariationSettings: "'FILL' 0, 'wght' 300" }}>
                         inventory_2
                       </span>
@@ -298,6 +390,25 @@ export default function PersediaanPage() {
                           idx < sayurList.length - 1 ? "border-b border-outline-variant" : ""
                         }`}
                       >
+                        <td className="px-6 py-4">
+                          <div className="w-11 h-11 rounded-lg bg-surface-container-low border border-outline-variant overflow-hidden flex items-center justify-center">
+                            {item.gambar_url ? (
+                              <img
+                                src={item.gambar_url}
+                                alt={item.nama}
+                                loading="lazy"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span
+                                className="material-symbols-outlined text-lg text-outline"
+                                style={{ fontVariationSettings: "'FILL' 0, 'wght' 300" }}
+                              >
+                                image
+                              </span>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 font-medium">{item.nama}</td>
                         <td className="px-6 py-4">{item.jumlah_persediaan}</td>
                         <td className="px-6 py-4 text-text-muted">{item.satuan}</td>
