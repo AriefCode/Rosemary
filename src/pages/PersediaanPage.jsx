@@ -24,6 +24,7 @@ export default function PersediaanPage() {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [gambarPreview, setGambarPreview] = useState(null);
   const [hapusGambar, setHapusGambar] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -42,10 +43,10 @@ export default function PersediaanPage() {
 
   // Body scroll lock
   useEffect(() => {
-    const locked = showForm || !!confirmDelete;
+    const locked = showForm || !!confirmDelete || !!lightboxImage;
     document.body.style.overflow = locked ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [showForm, confirmDelete]);
+  }, [showForm, confirmDelete, lightboxImage]);
 
   // Escape key for form
   useEffect(() => {
@@ -54,6 +55,14 @@ export default function PersediaanPage() {
     document.addEventListener("keydown", fn);
     return () => document.removeEventListener("keydown", fn);
   }, [showForm]);
+
+  // Escape key for lightbox gambar
+  useEffect(() => {
+    if (!lightboxImage) return;
+    const fn = (e) => { if (e.key === "Escape") setLightboxImage(null); };
+    document.addEventListener("keydown", fn);
+    return () => document.removeEventListener("keydown", fn);
+  }, [lightboxImage]);
 
   const openCreate = () => {
     setEditingId(null);
@@ -344,6 +353,44 @@ export default function PersediaanPage() {
         onCancel={() => setConfirmDelete(null)}
       />
 
+      {/* Lightbox gambar sayur */}
+      <AnimatePresence>
+        {lightboxImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-[2px] flex items-center justify-center z-50 p-4"
+            onClick={() => setLightboxImage(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className="relative max-w-2xl max-h-[85vh] w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => setLightboxImage(null)}
+                title="Tutup"
+                className="absolute -top-4 -right-4 bg-surface-container-lowest text-on-surface rounded-full w-9 h-9 flex items-center justify-center shadow-[0_4px_24px_rgba(27,67,50,0.10)] border border-outline-variant hover:bg-surface-container-low transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-fern"
+              >
+                <span className="material-symbols-outlined text-lg">close</span>
+              </button>
+              <img
+                src={lightboxImage.url}
+                alt={lightboxImage.alt}
+                className="w-full h-full max-h-[85vh] object-contain rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.3)]"
+              />
+              <p className="text-center text-on-primary font-body mt-2">{lightboxImage.alt}</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Tabel sayur */}
       <FadeContent delay={0.08}>
         <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(27,67,50,0.10)] overflow-hidden border border-outline-variant mb-8">
@@ -391,23 +438,38 @@ export default function PersediaanPage() {
                         }`}
                       >
                         <td className="px-6 py-4">
-                          <div className="w-11 h-11 rounded-lg bg-surface-container-low border border-outline-variant overflow-hidden flex items-center justify-center">
-                            {item.gambar_url ? (
+                          {item.gambar_url ? (
+                            <button
+                              type="button"
+                              onClick={() => setLightboxImage({ url: item.gambar_url, alt: item.nama })}
+                              title="Lihat gambar lebih jelas"
+                              className="group relative w-11 h-11 rounded-lg bg-surface-container-low border border-outline-variant overflow-hidden flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-fern"
+                            >
                               <img
                                 src={item.gambar_url}
                                 alt={item.nama}
                                 loading="lazy"
                                 className="w-full h-full object-cover"
                               />
-                            ) : (
+                              <span className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                                <span
+                                  className="material-symbols-outlined text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                  style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
+                                >
+                                  zoom_in
+                                </span>
+                              </span>
+                            </button>
+                          ) : (
+                            <div className="w-11 h-11 rounded-lg bg-surface-container-low border border-outline-variant overflow-hidden flex items-center justify-center">
                               <span
                                 className="material-symbols-outlined text-lg text-outline"
                                 style={{ fontVariationSettings: "'FILL' 0, 'wght' 300" }}
                               >
                                 image
                               </span>
-                            )}
-                          </div>
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-4 font-medium">{item.nama}</td>
                         <td className="px-6 py-4">{item.jumlah_persediaan}</td>
