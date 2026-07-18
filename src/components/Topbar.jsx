@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getNotifications } from "../services/notifications";
 import { useAuth } from "../context/AuthContext";
 
@@ -13,7 +13,8 @@ const pageLabels = {
 
 export default function Topbar({ onMenuToggle }) {
   const location = useLocation();
-  const { role } = useAuth();
+  const navigate = useNavigate();
+  const { role, user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [open, setOpen] = useState(false);
   const panelRef = useRef(null);
@@ -147,9 +148,25 @@ export default function Topbar({ onMenuToggle }) {
         </div>
 
         <div className="h-8 w-px bg-outline-variant mx-1" />
-        <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-on-primary font-bold text-sm">
-          {role === "pemilik" ? "P" : "K"}
-        </div>
+        <button
+          type="button"
+          onClick={() => navigate(role ? `/${role}/profile` : "/login")}
+          className="inline-flex items-center gap-3 rounded-lg p-1 hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-fern"
+          aria-label="Edit profil"
+        >
+          {user?.avatar_url ? (
+            <img
+              src={user.avatar_url}
+              alt="Avatar pengguna"
+              className="h-8 w-8 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-on-primary font-bold text-sm">
+              {user?.nama?.split(" ").map((w) => w.charAt(0).toUpperCase()).slice(0, 2).join("") || (role === "pemilik" ? "P" : "K")}
+            </div>
+          )}
+          <span className="hidden sm:inline font-medium">{user?.nama?.split(" ")[0] || "Profile"}</span>
+        </button>
       </div>
     </header>
   );
