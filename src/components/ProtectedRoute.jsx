@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import PageLoader from "./PageLoader";
+import PageLoader from "./Pageloader";
 import { useAuth } from "../context/AuthContext";
 
 export default function ProtectedRoute({ allowedRoles }) {

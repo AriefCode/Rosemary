@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
-import PageLoader from "./components/PageLoader";
+import PageLoader from "./components/Pageloader";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const LoginPage = lazy(() => import("./pages/LoginPage"));
@@ -25,8 +25,14 @@ export default function App() {
             <Route path="login" element={<LoginPage />} />
           </Route>
 
-          <Route path="/manager/*" element={<Navigate to="/pemilik/dashboard" replace />} />
-          <Route path="/staff/*" element={<Navigate to="/karyawan/dashboard" replace />} />
+          <Route
+            path="/manager/*"
+            element={<Navigate to="/pemilik/dashboard" replace />}
+          />
+          <Route
+            path="/staff/*"
+            element={<Navigate to="/karyawan/dashboard" replace />}
+          />
 
           <Route element={<ProtectedRoute allowedRoles={["pemilik"]} />}>
             <Route path="/pemilik" element={<MainLayout />}>
