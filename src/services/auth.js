@@ -13,3 +13,8 @@ export async function getMe() {
   const { data } = await api.get("/user");
   return data;
 }
+
+export async function updateProfile(payload) {
+  const { data } = await api.patch("/user", payload);
+  return data;
+}

@@ -13,6 +13,7 @@ const PesananPage = lazy(() => import("./pages/PesananPage"));
 const LaporanPage = lazy(() => import("./pages/LaporanPage"));
 const RestoranPage = lazy(() => import("./pages/RestoranPage"));
 const UsersPage = lazy(() => import("./pages/UsersPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
             <Route path="/pemilik" element={<MainLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="profile" element={<ProfilePage />} />
               <Route path="persediaan" element={<PersediaanPage />} />
               <Route path="restoran" element={<RestoranPage />} />
               <Route path="pengguna" element={<UsersPage />} />
@@ -49,6 +51,7 @@ export default function App() {
             <Route path="/karyawan" element={<MainLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="profile" element={<ProfilePage />} />
               <Route path="persediaan" element={<PersediaanPage />} />
               <Route path="restoran" element={<RestoranPage />} />
               <Route path="pesanan" element={<PesananPage />} />

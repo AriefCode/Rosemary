@@ -50,8 +50,15 @@ export function AuthProvider({ children }) {
     setRole(null);
   };
 
+  const updateProfile = async (payload) => {
+    const data = await authService.updateProfile(payload);
+    setUser(data);
+    setRole(data.role);
+    return data;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, role, loading, login, logout, isPemilik: role === "pemilik" }}>
+    <AuthContext.Provider value={{ user, role, loading, login, logout, updateProfile, isPemilik: role === "pemilik" }}>
       {children}
     </AuthContext.Provider>
   );

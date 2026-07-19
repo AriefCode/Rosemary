@@ -8,9 +8,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import { SkeletonRow } from "../components/Skeleton";
 import FadeContent from "../components/reactbits/FadeContent";
 
-const emptyForm = { nama: "", satuan: "", jumlah_persediaan: 0, batas_minimum: 5, gambar: null };
-const MAX_GAMBAR_SIZE = 2 * 1024 * 1024; // 2MB, samakan dengan batas validasi backend
-const GAMBAR_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const emptyForm = { nama: "", satuan: "", jumlah_persediaan: 0, batas_minimum: 5 };
 
 export default function PersediaanPage() {
   const toast = useToast();
@@ -22,9 +20,6 @@ export default function PersediaanPage() {
   const [form, setForm] = useState(emptyForm);
   const [formError, setFormError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const [gambarPreview, setGambarPreview] = useState(null);
-  const [hapusGambar, setHapusGambar] = useState(false);
-  const [lightboxImage, setLightboxImage] = useState(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -43,10 +38,10 @@ export default function PersediaanPage() {
 
   // Body scroll lock
   useEffect(() => {
-    const locked = showForm || !!confirmDelete || !!lightboxImage;
+    const locked = showForm || !!confirmDelete;
     document.body.style.overflow = locked ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [showForm, confirmDelete, lightboxImage]);
+  }, [showForm, confirmDelete]);
 
   // Escape key for form
   useEffect(() => {
@@ -56,20 +51,10 @@ export default function PersediaanPage() {
     return () => document.removeEventListener("keydown", fn);
   }, [showForm]);
 
-  // Escape key for lightbox gambar
-  useEffect(() => {
-    if (!lightboxImage) return;
-    const fn = (e) => { if (e.key === "Escape") setLightboxImage(null); };
-    document.addEventListener("keydown", fn);
-    return () => document.removeEventListener("keydown", fn);
-  }, [lightboxImage]);
-
   const openCreate = () => {
     setEditingId(null);
     setForm(emptyForm);
     setFormError("");
-    setGambarPreview(null);
-    setHapusGambar(false);
     setShowForm(true);
   };
 
@@ -80,46 +65,9 @@ export default function PersediaanPage() {
       satuan: item.satuan,
       jumlah_persediaan: item.jumlah_persediaan,
       batas_minimum: item.batas_minimum,
-      gambar: null,
     });
     setFormError("");
-    setGambarPreview(item.gambar_url || null);
-    setHapusGambar(false);
     setShowForm(true);
-  };
-
-  // Preview lokal untuk file yang baru dipilih (belum diupload) — object URL
-  // dibersihkan begitu file diganti/form ditutup agar tidak bocor memori.
-  useEffect(() => {
-    if (!(form.gambar instanceof File)) return;
-    const url = URL.createObjectURL(form.gambar);
-    setGambarPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [form.gambar]);
-
-  const handleGambarChange = (e) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-
-    if (!GAMBAR_MIME_TYPES.includes(file.type)) {
-      setFormError("Format gambar harus JPEG, PNG, atau WEBP.");
-      return;
-    }
-    if (file.size > MAX_GAMBAR_SIZE) {
-      setFormError("Ukuran gambar maksimal 2MB.");
-      return;
-    }
-
-    setFormError("");
-    setHapusGambar(false);
-    setForm((f) => ({ ...f, gambar: file }));
-  };
-
-  const handleRemoveGambar = () => {
-    setForm((f) => ({ ...f, gambar: null }));
-    setGambarPreview(null);
-    setHapusGambar(true);
   };
 
   // Daftar belanja bergantung logika server, jadi tetap di-refetch setelah mutasi;
@@ -133,7 +81,7 @@ export default function PersediaanPage() {
     setFormError("");
     try {
       if (editingId) {
-        const updated = await updateSayur(editingId, { ...form, hapus_gambar: hapusGambar });
+        const updated = await updateSayur(editingId, form);
         setSayurList((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
         toast("Data sayur berhasil diperbarui.");
       } else {
@@ -217,54 +165,6 @@ export default function PersediaanPage() {
                 <p className="text-error text-sm mb-3 p-3 bg-status-danger-bg rounded-lg">{formError}</p>
               )}
               <div className="space-y-4">
-                <div>
-                  <label className="font-label text-sm text-on-surface-variant block mb-1">
-                    Gambar Sayur
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 rounded-lg bg-surface-container-low border border-outline-variant overflow-hidden flex items-center justify-center shrink-0">
-                      {gambarPreview ? (
-                        <img
-                          src={gambarPreview}
-                          alt={form.nama ? `Pratinjau ${form.nama}` : "Pratinjau gambar sayur"}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span
-                          className="material-symbols-outlined text-3xl text-outline"
-                          style={{ fontVariationSettings: "'FILL' 0, 'wght' 300" }}
-                        >
-                          image
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex-1 space-y-1.5">
-                      <label
-                        htmlFor="sayur-gambar"
-                        className="inline-block cursor-pointer text-sm font-body text-accent-fern hover:text-primary border border-outline-variant rounded-lg px-3 py-2 transition-colors"
-                      >
-                        {gambarPreview ? "Ganti Gambar" : "Unggah Gambar"}
-                      </label>
-                      <input
-                        id="sayur-gambar"
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        onChange={handleGambarChange}
-                        className="hidden"
-                      />
-                      {gambarPreview && (
-                        <button
-                          type="button"
-                          onClick={handleRemoveGambar}
-                          className="block text-xs text-error hover:text-[#7f1d1d] transition-colors"
-                        >
-                          Hapus gambar
-                        </button>
-                      )}
-                      <p className="text-xs text-text-muted">JPEG/PNG/WEBP, maks. 2MB.</p>
-                    </div>
-                  </div>
-                </div>
                 <div>
                   <label htmlFor="sayur-nama" className="font-label text-sm text-on-surface-variant block mb-1">
                     Nama Sayur
@@ -353,44 +253,6 @@ export default function PersediaanPage() {
         onCancel={() => setConfirmDelete(null)}
       />
 
-      {/* Lightbox gambar sayur */}
-      <AnimatePresence>
-        {lightboxImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-[2px] flex items-center justify-center z-50 p-4"
-            onClick={() => setLightboxImage(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.92, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.92, opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-              className="relative max-w-2xl max-h-[85vh] w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                type="button"
-                onClick={() => setLightboxImage(null)}
-                title="Tutup"
-                className="absolute -top-4 -right-4 bg-surface-container-lowest text-on-surface rounded-full w-9 h-9 flex items-center justify-center shadow-[0_4px_24px_rgba(27,67,50,0.10)] border border-outline-variant hover:bg-surface-container-low transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-fern"
-              >
-                <span className="material-symbols-outlined text-lg">close</span>
-              </button>
-              <img
-                src={lightboxImage.url}
-                alt={lightboxImage.alt}
-                className="w-full h-full max-h-[85vh] object-contain rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.3)]"
-              />
-              <p className="text-center text-on-primary font-body mt-2">{lightboxImage.alt}</p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Tabel sayur */}
       <FadeContent delay={0.08}>
         <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(27,67,50,0.10)] overflow-hidden border border-outline-variant mb-8">
@@ -398,7 +260,6 @@ export default function PersediaanPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-surface-container-low font-label text-on-surface-variant text-xs uppercase tracking-wider">
-                  <th className="px-6 py-4">Gambar</th>
                   <th className="px-6 py-4">Nama</th>
                   <th className="px-6 py-4">Stok</th>
                   <th className="px-6 py-4">Satuan</th>
@@ -409,10 +270,10 @@ export default function PersediaanPage() {
               </thead>
               <tbody className="font-body text-on-surface">
                 {loading ? (
-                  [1, 2, 3, 4].map((i) => <SkeletonRow key={i} cols={7} />)
+                  [1, 2, 3, 4].map((i) => <SkeletonRow key={i} cols={6} />)
                 ) : sayurList.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-14 text-center">
+                    <td colSpan={6} className="px-6 py-14 text-center">
                       <span className="material-symbols-outlined text-5xl text-outline block mb-3" style={{ fontVariationSettings: "'FILL' 0, 'wght' 300" }}>
                         inventory_2
                       </span>
@@ -437,40 +298,6 @@ export default function PersediaanPage() {
                           idx < sayurList.length - 1 ? "border-b border-outline-variant" : ""
                         }`}
                       >
-                        <td className="px-6 py-4">
-                          {item.gambar_url ? (
-                            <button
-                              type="button"
-                              onClick={() => setLightboxImage({ url: item.gambar_url, alt: item.nama })}
-                              title="Lihat gambar lebih jelas"
-                              className="group relative w-11 h-11 rounded-lg bg-surface-container-low border border-outline-variant overflow-hidden flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-fern"
-                            >
-                              <img
-                                src={item.gambar_url}
-                                alt={item.nama}
-                                loading="lazy"
-                                className="w-full h-full object-cover"
-                              />
-                              <span className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                                <span
-                                  className="material-symbols-outlined text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                                  style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
-                                >
-                                  zoom_in
-                                </span>
-                              </span>
-                            </button>
-                          ) : (
-                            <div className="w-11 h-11 rounded-lg bg-surface-container-low border border-outline-variant overflow-hidden flex items-center justify-center">
-                              <span
-                                className="material-symbols-outlined text-lg text-outline"
-                                style={{ fontVariationSettings: "'FILL' 0, 'wght' 300" }}
-                              >
-                                image
-                              </span>
-                            </div>
-                          )}
-                        </td>
                         <td className="px-6 py-4 font-medium">{item.nama}</td>
                         <td className="px-6 py-4">{item.jumlah_persediaan}</td>
                         <td className="px-6 py-4 text-text-muted">{item.satuan}</td>
