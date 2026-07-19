@@ -70,7 +70,7 @@ export default function Sidebar({ isOpen, onClose }) {
       <div className="mt-auto px-4 space-y-1 border-t border-primary-container pt-6">
         <div className="flex items-center gap-3 px-2 mb-4">
           <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-on-primary font-bold text-xs">
-            {initial}
+            {user?.avatar_url ? user.nama?.split(" ").map((w) => w.charAt(0).toUpperCase()).slice(0, 2).join("") : initial}
           </div>
           <div className="overflow-hidden">
             <p className="text-on-primary text-xs font-medium truncate">{user?.email}</p>
